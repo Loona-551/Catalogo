@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Catálogo de Zapatos</title>
+  <title>Catálogo "Caballero" - Huella Digital</title>
   <script src="jquery-3.6.0.min.js"></script>
   <script src="turn.min.js"></script>
   <style>
@@ -15,9 +15,65 @@
       flex-direction: column;
       align-items: center;
     }
+    #catalog-container {
+      display: flex;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      position: relative;
+    }
+    #sidebar {
+    width: 200px;
+    padding: 10px;
+    background: #e0e0e0;
+    border-radius: 6px;
+    flex-shrink: 0;
+    position: relative;
+    transition: all 0.4s ease;
+    z-index: 10;
+  }
+  #sidebar.collapsed {
+    width: 0;
+    padding: 0;
+    opacity: 0;
+    overflow: hidden;
+  }
+
+  /* Botón independiente */
+  #toggle-sidebar {
+    position: absolute;
+    top: 1px;
+    left: 0; /* al borde izquierdo del contenedor */
+    width: 25px;
+    height: 25px;
+    background: #333;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    z-index: 20; /* siempre encima de todo */
+  }
+    #sidebar h2 {
+      font-size: 18px;
+      margin-bottom: 10px;
+      cursor: default;
+      user-select: none;
+    }
+    #category-list {
+      display: block;
+      margin-top: 5px;
+    }
+    #category-list button {
+      width: 100%;
+      margin: 5px 0;
+      font-size: 16px;
+    }
     #flipbook {
-      width: 90%;
-      max-width: 900px;
+      width: 900px;
       height: 600px;
       margin: 20px auto;
     }
@@ -91,6 +147,23 @@
       max-height: 95%;
     }
     /* Responsive ajustes */
+    @media (max-width: 1024px) {
+      #catalog-container {
+        flex-direction: column;
+        align-items: center;
+      }
+      #sidebar {
+        width: 90%;
+        transform: translateX(0) !important;
+        margin-bottom: 20px;
+      }
+      #flipbook {
+        width: 90%;
+      }
+      #toggle-sidebar {
+        right: 10px;
+      }
+    }
     @media (max-width: 768px) {
       #flipbook {
         height: 400px;
@@ -107,9 +180,19 @@
   </style>
 </head>
 <body>
-  <h1>Catálogo de Zapatos</h1>
+  <h1>Catálogo "Caballero" - Huella Digital</h1>
 
+  <div id="catalog-container">
+  <div id="sidebar">
+    <h2>Categorías</h2>
+    <div id="category-list">
+      <button data-page="25">Adidas</button>
+      <button data-page="50">Puma</button>
+    </div>
+  </div>
+  <button id="toggle-sidebar">◀</button> <!-- ahora fuera de #sidebar -->
   <div id="flipbook"></div>
+</div>
 
   <div class="controls">
     <button id="prev">⬅ Anterior</button>
@@ -125,17 +208,14 @@
   </div>
 
   <script>
-    // Páginas del catálogo (ajusta el número máximo de páginas según tus imágenes)
-    const totalPages = 186; // 👉 cámbialo al total de imágenes
+    const totalPages = 186; 
     const flipbook = $("#flipbook");
 
-    // Generar páginas automáticamente
     for (let i = 1; i <= totalPages; i++) {
-      const num = String(i).padStart(3, "0"); // formato pagina_001
+      const num = String(i).padStart(3, "0");
       flipbook.append(`<div class="page"><img src="cat1/pagina_${num}.jpg" alt="Página ${i}"></div>`);
     }
 
-    // Inicializar flipbook
     flipbook.turn({
       width: 900,
       height: 600,
@@ -143,34 +223,40 @@
       display: 'double'
     });
 
-    // Botones de navegación
     $("#prev").click(() => flipbook.turn("previous"));
     $("#next").click(() => flipbook.turn("next"));
 
-    // Zoom al hacer clic en una página
     $(document).on("click", "#flipbook .page img", function () {
       const src = $(this).attr("src");
       $("body").append(`<div class="zoomed"><img src="${src}"></div>`);
     });
 
-    // Salir del zoom
     $(document).on("click", ".zoomed", function () {
       $(this).remove();
     });
 
-    // Actualizar número de página
     flipbook.bind("turned", function(event, page) {
       $("#current-page").text(page);
     });
 
-    // Ir a página específica
     $("#go-page").click(function() {
       const page = parseInt($(".page-input").val());
       if (!isNaN(page) && page >= 1 && page <= totalPages) {
         flipbook.turn("page", page);
       }
-      $(".page-input").val(""); // limpiar input
+      $(".page-input").val("");
     });
+
+    $("#sidebar button[data-page]").click(function() {
+      const page = parseInt($(this).attr("data-page"));
+      flipbook.turn("page", page);
+    });
+
+    // Desplegable completo de la barra lateral
+    $("#toggle-sidebar").click(function() {
+    $("#sidebar").toggleClass("collapsed");
+    $(this).text($("#sidebar").hasClass("collapsed") ? "▶" : "◀");
+  });
   </script>
 </body>
 </html>

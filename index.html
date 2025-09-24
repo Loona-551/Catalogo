@@ -18,6 +18,83 @@
       overflow-x: hidden;
     }
 
+    /* HEADER */
+    header {
+  width: 100%;
+  background: rgba(0,0,0,0.6); /* más transparente para efecto flotante */
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  box-sizing: border-box;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(8px); /* desenfoque más marcado detrás */
+  box-shadow: 0 8px 25px rgba(0,0,0,0.4); /* sombra más suave y difusa */
+  border-radius: 0 0 12px 12px; /* bordes redondeados en la parte inferior */
+}
+
+    header .left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    header .left img {
+      width: 30px;
+      height: 30px;
+      object-fit: cover; /* mejor si quieres que se recorte y no deforme */
+      border-radius: 50%; /* esto lo hace circular */
+    }
+    header .left span {
+      font-size: 18px;
+      font-weight: bold;
+    }
+    header .menu {
+      position: relative;
+      display: inline-block;
+    }
+    header .menu button button:hover {
+      background: #555;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 5px 10px;
+      cursor: pointer;
+      box-shadow: 0 0 12px 3px rgba(255,255,255,0.8);
+      transition: box-shadow 0.3s ease-in-out;
+    }
+    header .menu-content {
+      display: none;
+      position: absolute;
+      background-color: white;
+      min-width: 150px;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+      z-index: 1;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    header .menu-content a {
+      color: black;
+      padding: 10px;
+      text-decoration: none;
+      display: block;
+    }
+    header .menu-content a:hover {
+      background-color: #ddd;
+    }
+    header .menu:hover .menu-content {
+      display: block;
+    }
+    header .right a:hover {
+      display: flex;
+      gap: 15px;
+      font-size: 24px;
+      text-shadow: 0 0 8px rgba(255,255,255,0.9), 0 0 12px rgba(255,255,255,0.6);
+      transition: text-shadow 0.3s ease-in-out;
+    }
+
     /* FONDO NUEVO ANIMADO */
     #fondo-decorativo {
       position: fixed;
@@ -66,7 +143,7 @@
       display: flex;
       width: 100%;
       max-width: 1200px;
-      margin: 0 auto;
+      margin: 20px auto 0;
       position: relative;
     }
     #sidebar {
@@ -162,17 +239,6 @@
       border-radius: 4px;
       border: 1px solid #ccc;
     }
-    .contact {
-      margin: 20px;
-      text-align: center;
-    }
-    .contact a, .contact span {
-      display: block;
-      margin: 5px 0;
-      color: #333;
-      font-size: 18px;
-      text-decoration: none;
-    }
     .zoomed {
       position: fixed;
       top: 0; 
@@ -223,7 +289,30 @@
   </style>
 </head>
 <body>
-  <h1>Catálogo "Caballero" - Huella Digital</h1>
+
+  <!-- HEADER -->
+  <header>
+    <div class="left">
+      <img src="https://iili.io/Kcr3bS9.png" alt="Logo">
+      <span>Huella Digital</span>
+    </div>
+    <div class="menu">
+      <button>Catálogos ▼</button>
+      <div class="menu-content">
+        <a href="#">Catálogo 1</a>
+        <a href="#">Catálogo 2</a>
+        <a href="#">Catálogo 3</a>
+      </div>
+    </div>
+    <div class="right">
+  <a href="https://wa.me/527751926952" target="_blank">
+    <img src="https://iili.io/Kc494Yg.png" alt="WhatsApp" style="width:28px; height:28px;">
+  </a>
+  <a href="https://www.facebook.com/marketplace/profile/61556632927258/" target="_blank">
+    <img src="https://iili.io/Kc43IUP.png" alt="Facebook" style="width:28px; height:28px;">
+  </a>
+</div>
+  </header>
 
   <div id="fondo-decorativo">
     <div class="gradient-bg"></div>
@@ -320,6 +409,7 @@
   </script>
 </body>
 </html>
+
 
 
 

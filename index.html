@@ -358,10 +358,10 @@
   </div>
 
   <script>
-    const totalPages = 186; 
+    const totalPages = 187; 
     const flipbook = $("#flipbook");
 
-    for (let i = 1; i <= totalPages; i++) {
+    for (let i = 0; i <= totalPages; i++) {
       const num = String(i).padStart(3, "0");
       flipbook.append(`<div class="page"><img src="cat1/pagina_${num}.jpg" alt="Página ${i}"></div>`);
     }
@@ -409,6 +409,7 @@
   </script>
 </body>
 </html>
+
 
 
 

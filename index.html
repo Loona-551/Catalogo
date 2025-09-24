@@ -36,6 +36,7 @@
       display: flex;
       justify-content: center;
       gap: 15px;
+      align-items: center;
     }
     button {
       padding: 10px 20px;
@@ -48,6 +49,17 @@
     }
     button:hover {
       background: #555;
+    }
+    .page-info {
+      font-size: 16px;
+      margin-left: 10px;
+    }
+    input.page-input {
+      width: 60px;
+      padding: 5px;
+      font-size: 16px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
     }
     .contact {
       margin: 20px;
@@ -87,6 +99,10 @@
         font-size: 14px;
         padding: 8px 16px;
       }
+      input.page-input {
+        width: 50px;
+        font-size: 14px;
+      }
     }
   </style>
 </head>
@@ -98,6 +114,9 @@
   <div class="controls">
     <button id="prev">⬅ Anterior</button>
     <button id="next">Siguiente ➡</button>
+    <span class="page-info">Página: <span id="current-page">1</span> / 186</span>
+    <input class="page-input" type="number" min="1" max="186" placeholder="Ir a página">
+    <button id="go-page">Ir</button>
   </div>
 
   <div class="contact">
@@ -138,9 +157,25 @@
     $(document).on("click", ".zoomed", function () {
       $(this).remove();
     });
+
+    // Actualizar número de página
+    flipbook.bind("turned", function(event, page) {
+      $("#current-page").text(page);
+    });
+
+    // Ir a página específica
+    $("#go-page").click(function() {
+      const page = parseInt($(".page-input").val());
+      if (!isNaN(page) && page >= 1 && page <= totalPages) {
+        flipbook.turn("page", page);
+      }
+      $(".page-input").val(""); // limpiar input
+    });
   </script>
 </body>
 </html>
+
+
 
 
 

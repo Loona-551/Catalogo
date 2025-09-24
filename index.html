@@ -1,68 +1,96 @@
-<style>
-  /* Barra lateral */
-  #sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 220px;
-    height: 100%;
-    background: #222;
-    color: white;
-    padding: 20px;
-    overflow-y: auto;
-    z-index: 10000;
-  }
-  #sidebar h2 {
-    margin-top: 0;
-    font-size: 20px;
-    cursor: pointer;
-  }
-  #sidebar ul {
-    list-style: none;
-    padding: 0;
-    display: none;
-  }
-  #sidebar ul li {
-    margin: 10px 0;
-  }
-  #sidebar ul li button {
-    width: 100%;
-    text-align: left;
-    background: #333;
-  }
-  #sidebar ul li button:hover {
-    background: #555;
-  }
-  /* Flipbook con margen izquierdo */
-  #flipbook {
-    margin-left: 240px; /* espacio para la barra lateral */
-  }
-  /* Paginador */
-  .paginator {
-    margin: 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-  }
-  .paginator input {
-    width: 50px;
-    padding: 5px;
-    font-size: 16px;
-  }
-</style>
-
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catálogo de Zapatos</title>
+  <script src="jquery-3.6.0.min.js"></script>
+  <script src="turn.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #flipbook {
+      width: 90%;
+      max-width: 900px;
+      height: 600px;
+      margin: 20px auto;
+    }
+    #flipbook .page {
+      width: 100%;
+      height: 100%;
+    }
+    #flipbook .page img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      cursor: zoom-in;
+    }
+    .controls {
+      margin: 10px;
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #333;
+      color: white;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #555;
+    }
+    .contact {
+      margin: 20px;
+      text-align: center;
+    }
+    .contact a, .contact span {
+      display: block;
+      margin: 5px 0;
+      color: #333;
+      font-size: 18px;
+      text-decoration: none;
+    }
+    /* Zoom */
+    .zoomed {
+      position: fixed;
+      top: 0; 
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.9);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: zoom-out;
+      z-index: 9999;
+    }
+    .zoomed img {
+      max-width: 95%;
+      max-height: 95%;
+    }
+    /* Responsive ajustes */
+    @media (max-width: 768px) {
+      #flipbook {
+        height: 400px;
+      }
+      button {
+        font-size: 14px;
+        padding: 8px 16px;
+      }
+    }
+  </style>
+</head>
 <body>
-  <!-- Barra lateral -->
-  <div id="sidebar">
-    <h2 id="toggle-cats">Categorías ▾</h2>
-    <ul id="categories">
-      <li><button data-page="25">Adidas</button></li>
-      <li><button data-page="50">Puma</button></li>
-      <!-- Puedes añadir más aquí -->
-    </ul>
-  </div>
-
   <h1>Catálogo de Zapatos</h1>
 
   <div id="flipbook"></div>
@@ -72,25 +100,19 @@
     <button id="next">Siguiente ➡</button>
   </div>
 
-  <!-- Paginador -->
-  <div class="paginator">
-    Página: <span id="currentPage">1</span> / <span id="totalPages">186</span>
-    <input type="number" id="gotoPage" min="1" max="186">
-    <button id="goBtn">Ir</button>
-  </div>
-
   <div class="contact">
     <span>📱 WhatsApp: +52 775 192 6952</span>
     <a href="https://www.facebook.com/marketplace/profile/61556632927258/" target="_blank">📘 Facebook</a>
   </div>
 
   <script>
-    const totalPages = 186; 
+    // Páginas del catálogo (ajusta el número máximo de páginas según tus imágenes)
+    const totalPages = 186; // 👉 cámbialo al total de imágenes
     const flipbook = $("#flipbook");
 
     // Generar páginas automáticamente
     for (let i = 1; i <= totalPages; i++) {
-      const num = String(i).padStart(3, "0");
+      const num = String(i).padStart(3, "0"); // formato pagina_001
       flipbook.append(`<div class="page"><img src="cat1/pagina_${num}.jpg" alt="Página ${i}"></div>`);
     }
 
@@ -99,12 +121,7 @@
       width: 900,
       height: 600,
       autoCenter: true,
-      display: 'double',
-      when: {
-        turned: function(e, page) {
-          $("#currentPage").text(page);
-        }
-      }
+      display: 'double'
     });
 
     // Botones de navegación
@@ -121,27 +138,11 @@
     $(document).on("click", ".zoomed", function () {
       $(this).remove();
     });
-
-    // Toggle de categorías
-    $("#toggle-cats").click(() => {
-      $("#categories").slideToggle();
-    });
-
-    // Botones de categorías
-    $("#categories button").click(function() {
-      const page = parseInt($(this).data("page"));
-      flipbook.turn("page", page);
-    });
-
-    // Paginador manual
-    $("#goBtn").click(() => {
-      let page = parseInt($("#gotoPage").val());
-      if(page >= 1 && page <= totalPages){
-        flipbook.turn("page", page);
-      }
-    });
   </script>
 </body>
+</html>
+
+
 
 
 

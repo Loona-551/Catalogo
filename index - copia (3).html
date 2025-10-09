@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catálogo "Caballero" - Huella Digital</title>
+  <script src="jquery-3.6.0.min.js"></script>
+  <script src="turn.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* HEADER */
+    header {
+  width: 100%;
+  background: rgba(0,0,0,0.6); /* más transparente para efecto flotante */
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  box-sizing: border-box;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(8px); /* desenfoque más marcado detrás */
+  box-shadow: 0 8px 25px rgba(0,0,0,0.4); /* sombra más suave y difusa */
+  border-radius: 0 0 12px 12px; /* bordes redondeados en la parte inferior */
+}
+
+    header .left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    header .left img {
+      width: 30px;
+      height: 30px;
+      object-fit: cover; /* mejor si quieres que se recorte y no deforme */
+      border-radius: 50%; /* esto lo hace circular */
+    }
+    header .left span {
+      font-size: 18px;
+      font-weight: bold;
+    }
+    header .menu {
+      position: relative;
+      display: inline-block;
+    }
+    header .menu button button:hover {
+      background: #555;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 5px 10px;
+      cursor: pointer;
+      box-shadow: 0 0 12px 3px rgba(255,255,255,0.8);
+      transition: box-shadow 0.3s ease-in-out;
+    }
+    header .menu-content {
+      display: none;
+      position: absolute;
+      background-color: white;
+      min-width: 150px;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+      z-index: 1;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    header .menu-content a {
+      color: black;
+      padding: 10px;
+      text-decoration: none;
+      display: block;
+    }
+    header .menu-content a:hover {
+      background-color: #ddd;
+    }
+    header .menu:hover .menu-content {
+      display: block;
+    }
+    header .right a:hover {
+      display: flex;
+      gap: 15px;
+      font-size: 24px;
+      text-shadow: 0 0 8px rgba(255,255,255,0.9), 0 0 12px rgba(255,255,255,0.6);
+      transition: text-shadow 0.3s ease-in-out;
+    }
+
+    /* FONDO NUEVO ANIMADO */
+    #fondo-decorativo {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      overflow: hidden;
+    }
+    #fondo-decorativo > .gradient-bg {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom right, #f9f9f9, #f0f0f0);
+      animation: gradientShift 20s ease-in-out infinite alternate;
+    }
+    #fondo-decorativo svg {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+    }
+    #fondo-decorativo polygon:nth-child(1) {
+      animation: rayMove1 25s ease-in-out infinite alternate;
+    }
+    #fondo-decorativo polygon:nth-child(2) {
+      animation: rayMove2 30s ease-in-out infinite alternate;
+    }
+
+    @keyframes gradientShift {
+      0% { background: linear-gradient(to bottom right, #f9f9f9, #f0f0f0); }
+      50% { background: linear-gradient(to bottom right, #f0f0f0, #e8e8e8); }
+      100% { background: linear-gradient(to bottom right, #f9f9f9, #f0f0f0); }
+    }
+    @keyframes rayMove1 {
+      0% { transform: translate(0px,0px) rotate(0deg); }
+      50% { transform: translate(10px,-10px) rotate(3deg); }
+      100% { transform: translate(-10px,10px) rotate(-3deg); }
+    }
+    @keyframes rayMove2 {
+      0% { transform: translate(0px,0px) rotate(0deg); }
+      50% { transform: translate(-10px,10px) rotate(-3deg); }
+      100% { transform: translate(10px,-10px) rotate(3deg); }
+    }
+
+    /* CONTENIDO DEL CATÁLOGO */
+    #catalog-container {
+      display: flex;
+      width: 100%;
+      max-width: 1200px;
+      margin: 20px auto 0;
+      position: relative;
+    }
+    #sidebar {
+      width: 200px;
+      padding: 20px;
+      background: #e0e0e0;
+      border-radius: 6px;
+      flex-shrink: 0;
+      position: relative;
+      transition: all 0.4s ease;
+      z-index: 10;
+    }
+    #sidebar.collapsed {
+      width: 0;
+      padding: 0;
+      opacity: 0;
+      overflow: hidden;
+    }
+    #toggle-sidebar {
+      position: absolute;
+      top: 1px;
+      left: 0;
+      width: 25px;
+      height: 25px;
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      z-index: 20;
+    }
+    #sidebar h2 {
+      font-size: 18px;
+      margin-bottom: 10px;
+      cursor: default;
+      user-select: none;
+    }
+    #category-list {
+      display: block;
+      margin-top: 5px;
+    }
+    #category-list button {
+      width: 100%;
+      margin: 5px 0;
+      font-size: 16px;
+    }
+    #flipbook {
+      width: 900px;
+      height: 600px;
+      margin: 20px auto;
+    }
+    #flipbook .page {
+      width: 100%;
+      height: 100%;
+    }
+    #flipbook .page img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      cursor: zoom-in;
+    }
+    .controls {
+      margin: 10px;
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      align-items: center;
+    }
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #333;
+      color: white;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #555;
+    }
+    .page-info {
+      font-size: 16px;
+      margin-left: 10px;
+    }
+    input.page-input {
+      width: 60px;
+      padding: 5px;
+      font-size: 16px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    .zoomed {
+      position: fixed;
+      top: 0; 
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.9);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: zoom-out;
+      z-index: 9999;
+    }
+    .zoomed img {
+      max-width: 95%;
+      max-height: 95%;
+    }
+    @media (max-width: 1024px) {
+      #catalog-container {
+        flex-direction: column;
+        align-items: center;
+      }
+      #sidebar {
+        width: 90%;
+        transform: translateX(0) !important;
+        margin-bottom: 20px;
+      }
+      #flipbook {
+        width: 90%;
+      }
+      #toggle-sidebar {
+        right: 10px;
+      }
+    }
+    @media (max-width: 768px) {
+      #flipbook {
+        height: 400px;
+      }
+      button {
+        font-size: 14px;
+        padding: 8px 16px;
+      }
+      input.page-input {
+        width: 50px;
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="left">
+      <img src="https://iili.io/Kcr3bS9.png" alt="Logo">
+      <span>Huella Digital</span>
+    </div>
+    <div class="menu">
+      <button>Catálogos ▼</button>
+      <div class="menu-content">
+        <a href="#">Catálogo 1</a>
+        <a href="#">Catálogo 2</a>
+        <a href="#">Catálogo 3</a>
+      </div>
+    </div>
+    <div class="right">
+  <a href="https://wa.me/527751926952" target="_blank">
+    <img src="https://iili.io/Kc494Yg.png" alt="WhatsApp" style="width:28px; height:28px;">
+  </a>
+  <a href="https://www.facebook.com/marketplace/profile/61556632927258/" target="_blank">
+    <img src="https://iili.io/Kc43IUP.png" alt="Facebook" style="width:28px; height:28px;">
+  </a>
+</div>
+  </header>
+
+  <div id="fondo-decorativo">
+    <div class="gradient-bg"></div>
+    <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="ray-gradient-1" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#800080" stop-opacity="0.3"/>
+          <stop offset="100%" stop-color="transparent"/>
+        </linearGradient>
+        <linearGradient id="ray-gradient-2" x1="100%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#0000ff" stop-opacity="0.3"/>
+          <stop offset="100%" stop-color="transparent"/>
+        </linearGradient>
+      </defs>
+      <polygon points="0,0 100,0 50,100" fill="url(#ray-gradient-1)" />
+      <polygon points="100,0 100,100 0,50" fill="url(#ray-gradient-2)" />
+    </svg>
+  </div>
+
+  <div id="catalog-container">
+    <div id="sidebar">
+      <h2>Categorías</h2>
+      <div id="category-list">
+        <button data-page="25">Adidas</button>
+        <button data-page="50">Puma</button>
+      </div>
+    </div>
+    <button id="toggle-sidebar">◀</button>
+    <div id="flipbook"></div>
+  </div>
+
+  <div class="controls">
+    <button id="prev">⬅ Anterior</button>
+    <button id="next">Siguiente ➡</button>
+    <span class="page-info">Página: <span id="current-page">1</span> / 186</span>
+    <input class="page-input" type="number" min="1" max="186" placeholder="Ir a página">
+    <button id="go-page">Ir</button>
+  </div>
+
+  <div class="contact">
+    <span>📱 WhatsApp: +52 775 192 6952</span>
+    <a href="https://www.facebook.com/marketplace/profile/61556632927258/" target="_blank">📘 Facebook</a>
+  </div>
+
+  <script>
+    const totalPages = 186; 
+    const flipbook = $("#flipbook");
+
+    for (let i = 1; i <= totalPages; i++) {
+      const num = String(i).padStart(3, "0");
+      flipbook.append(`<div class="page"><img src="cat1/pagina_${num}.jpg" alt="Página ${i}"></div>`);
+    }
+
+    flipbook.turn({
+      width: 900,
+      height: 600,
+      autoCenter: true,
+      display: 'double'
+    });
+
+    $("#prev").click(() => flipbook.turn("previous"));
+    $("#next").click(() => flipbook.turn("next"));
+
+    $(document).on("click", "#flipbook .page img", function () {
+      const src = $(this).attr("src");
+      $("body").append(`<div class="zoomed"><img src="${src}"></div>`);
+    });
+
+    $(document).on("click", ".zoomed", function () {
+      $(this).remove();
+    });
+
+    flipbook.bind("turned", function(event, page) {
+      $("#current-page").text(page);
+    });
+
+    $("#go-page").click(function() {
+      const page = parseInt($(".page-input").val());
+      if (!isNaN(page) && page >= 1 && page <= totalPages) {
+        flipbook.turn("page", page);
+      }
+      $(".page-input").val("");
+    });
+
+    $("#sidebar button[data-page]").click(function() {
+      const page = parseInt($(this).attr("data-page"));
+      flipbook.turn("page", page);
+    });
+
+    $("#toggle-sidebar").click(function() {
+      $("#sidebar").toggleClass("collapsed");
+      $(this).text($("#sidebar").hasClass("collapsed") ? "▶" : "◀");
+    });
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catálogo "Caballero" - Huella Digital</title>
+  <script src="jquery-3.6.0.min.js"></script>
+  <script src="turn.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* HEADER */
+    header {
+      width: 100%;
+      background: rgba(0,0,0,0.6);
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      box-sizing: border-box;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+      border-radius: 0 0 12px 12px;
+    }
+
+    header .left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    header .left img {
+      width: 30px;
+      height: 30px;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+    header .left span {
+      font-size: 18px;
+      font-weight: bold;
+    }
+    header .menu {
+      position: relative;
+      display: inline-block;
+    }
+    header .menu button:hover {
+      background: #555;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 5px 10px;
+      cursor: pointer;
+      box-shadow: 0 0 12px 3px rgba(255,255,255,0.8);
+      transition: box-shadow 0.3s ease-in-out;
+    }
+    header .menu-content {
+      display: none;
+      position: absolute;
+      background-color: white;
+      min-width: 150px;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+      z-index: 1;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    header .menu-content a {
+      color: black;
+      padding: 10px;
+      text-decoration: none;
+      display: block;
+    }
+    header .menu-content a:hover {
+      background-color: #ddd;
+    }
+    header .menu:hover .menu-content {
+      display: block;
+    }
+
+    /* FONDO NUEVO ANIMADO */
+    #fondo-decorativo {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      overflow: hidden;
+    }
+    #fondo-decorativo > .gradient-bg {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom right, #f9f9f9, #f0f0f0);
+      animation: gradientShift 20s ease-in-out infinite alternate;
+    }
+    #fondo-decorativo svg {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+    }
+
+    @keyframes gradientShift {
+      0% { background: linear-gradient(to bottom right, #f9f9f9, #f0f0f0); }
+      50% { background: linear-gradient(to bottom right, #f0f0f0, #e8e8e8); }
+      100% { background: linear-gradient(to bottom right, #f9f9f9, #f0f0f0); }
+    }
+
+    /* CONTENIDO DEL CATÁLOGO */
+    #catalog-container {
+      display: flex;
+      width: 100%;
+      max-width: 1200px;
+      margin: 20px auto 0;
+      position: relative;
+    }
+    #sidebar {
+      width: 150px;
+      padding: 20px;
+      background: #e0e0e0;
+      border-radius: 6px;
+      flex-shrink: 0;
+      position: relative;
+      transition: all 0.4s ease;
+      z-index: 10;
+    }
+    #sidebar.collapsed {
+      width: 0;
+      padding: 0;
+      opacity: 0;
+      overflow: hidden;
+    }
+    #toggle-sidebar {
+      position: absolute;
+      top: 1px;
+      left: 0;
+      width: 25px;
+      height: 25px;
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      z-index: 20;
+    }
+    #sidebar h2 {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    #category-list button {
+      width: 100%;
+      margin: 1px 0;
+      font-size: 12px;
+      padding: 5px 5px;
+      cursor: pointer;
+    }
+
+    /* SUBMENÚS */
+    .subcategory-list {
+      display: none;
+      background: #d6d6d6;
+      margin-left: 10px;
+      border-radius: 4px;
+      padding: 5px 0;
+    }
+    .subcategory-list a {
+      display: block;
+      padding: 5px 10px;
+      color: #111;
+      text-decoration: none;
+      font-size: 12px;
+    }
+    .subcategory-list a:hover {
+      background: #c0c0c0;
+    }
+
+    #flipbook {
+      width: 900px;
+      height: 600px;
+      margin: 20px auto;
+    }
+    #flipbook .page img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      cursor: zoom-in;
+    }
+
+    .controls {
+      margin: 10px;
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      align-items: center;
+    }
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #333;
+      color: white;
+      font-size: 16px;
+    }
+    button:hover { background: #555; }
+    .zoomed {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.9);
+      display: flex; justify-content: center; align-items: center;
+      cursor: zoom-out;
+      z-index: 9999;
+    }
+    .zoomed img {
+      max-width: 95%;
+      max-height: 95%;
+    }
+
+    /* MINIATURAS */
+    #thumbnail-gallery {
+      display: flex;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      gap: 10px;
+      padding: 15px;
+      max-width: 95%;
+      margin: 30px auto;
+      border-radius: 8px;
+      background: rgba(240, 240, 240, 0.9);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      scroll-behavior: smooth;
+    }
+    .thumb {
+      position: relative;
+      flex: 0 0 auto;
+      width: 120px; height: 160px;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .thumb img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    .thumb:hover {
+      transform: scale(1.08);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    }
+    .thumb span {
+      position: absolute;
+      bottom: 3px; right: 5px;
+      background: rgba(0,0,0,0.7);
+      color: white; font-size: 13px;
+      padding: 2px 5px; border-radius: 3px;
+    }
+    .thumb.active {
+      outline: 3px solid #3b82f6;
+      transform: scale(1.12);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="left">
+      <img src="https://iili.io/Kcr3bS9.png" alt="Logo">
+      <span>Huella Digital</span>
+    </div>
+    <div class="menu">
+      <button>Catálogos ▼</button>
+      <div class="menu-content">
+        <a href="#">Catálogo 1</a>
+        <a href="#">Catálogo 2</a>
+        <a href="#">Catálogo 3</a>
+      </div>
+    </div>
+    <div class="right">
+      <a href="https://wa.me/527751926952" target="_blank">
+        <img src="https://iili.io/Kc494Yg.png" alt="WhatsApp" style="width:28px; height:28px;">
+      </a>
+      <a href="https://www.facebook.com/marketplace/profile/61556632927258/" target="_blank">
+        <img src="https://iili.io/Kc43IUP.png" alt="Facebook" style="width:28px; height:28px;">
+      </a>
+    </div>
+  </header>
+
+  <div id="catalog-container">
+    <div id="sidebar">
+      <h2>Categorías</h2>
+      <div id="category-list">
+
+
+        <button class="category-btn">Nike ▼</button>
+        <div class="subcategory-list">
+          <a href="#" data-page="2">Página 2</a>
+          <a href="#" data-page="32">Página 32</a>
+          <a href="#" data-page="39">Página 39</a>
+          <a href="#" data-page="116">Página 116</a>
+          <a href="#" data-page="142">Página 142</a>
+        </div>
+
+        <button class="category-btn">Adidas ▼</button>
+        <div class="subcategory-list">
+          <a href="#" data-page="4">Página 4</a>
+          <a href="#" data-page="18">Página 18</a>
+          <a href="#" data-page="20">Página 20</a>
+          <a href="#" data-page="22">Página 22</a>
+          <a href="#" data-page="30">Página 30</a>
+          <a href="#" data-page="32">Página 32</a>
+          <a href="#" data-page="34">Página 34</a>
+          <a href="#" data-page="38">Página 38</a>
+          <a href="#" data-page="44">Página 44</a>
+          <a href="#" data-page="62">Página 62</a>
+          <a href="#" data-page="114">Página 114</a>
+          <a href="#" data-page="118">Página 118</a>
+          <a href="#" data-page="136">Página 136</a>
+          <a href="#" data-page="140">Página 140</a>
+          <a href="#" data-page="186">Página 186</a> 
+        </div>
+
+        <button class="category-btn">Puma ▼</button>
+        <div class="subcategory-list">
+          <a href="#" data-page="4">Página 4</a>
+          <a href="#" data-page="24">Página 24</a>
+          <a href="#" data-page="26">Página 26</a>
+          <a href="#" data-page="28">Página 28</a>
+          <a href="#" data-page="30">Página 30</a>
+          <a href="#" data-page="34">Página 34</a>
+          <a href="#" data-page="40">Página 40</a>
+          <a href="#" data-page="42">Página 42</a>
+          <a href="#" data-page="62">Página 62</a>
+          <a href="#" data-page="136">Página 136</a>
+          <a href="#" data-page="180">Página 180</a>
+          <a href="#" data-page="182">Página 182</a>
+          <a href="#" data-page="185">Página 185</a>
+        </div>
+
+        <button class="category-btn">Flexi ▼</button>
+        <div class="subcategory-list">
+          <a href="#" data-page="56">Página 56</a>
+          <a href="#" data-page="66">Página 66</a>
+          <a href="#" data-page="70">Página 70</a>
+          <a href="#" data-page="76">Página 76</a>
+          <a href="#" data-page="80">Página 80</a>
+          <a href="#" data-page="86">Página 86</a>
+          <a href="#" data-page="88">Página 88</a>
+          <a href="#" data-page="90">Página 90</a>
+          <a href="#" data-page="156">Página 156</a>
+        </div>
+        
+        <button class="category-btn">Pirma ▼</button>
+        <div class="subcategory-list">
+          <a href="#" data-page="14">Página 14</a>
+          <a href="#" data-page="50">Página 50</a>
+          <a href="#" data-page="52">Página 52</a>
+          <a href="#" data-page="54">Página 54</a>
+          <a href="#" data-page="60">Página 60</a>
+          <a href="#" data-page="130">Página 130</a>
+          <a href="#" data-page="132">Página 132</a>
+          <a href="#" data-page="134">Página 134</a>
+          <a href="#" data-page="138">Página 138</a>
+          <a href="#" data-page="140">Página 140</a>
+          <a href="#" data-page="144">Página 144</a>
+        </div>
+
+        <button class="category-btn">Charly ▼</button>
+        <div class="subcategory-list">
+          <a href="#" data-page="46">Página 46</a>
+          <a href="#" data-page="48">Página 48</a>
+          <a href="#" data-page="126">Página 126</a>
+          <a href="#" data-page="128">Página 128</a>
+          <a href="#" data-page="130">Página 130</a>
+        </div>
+
+        <button class="category-btn">Vans ▼</button>
+        <div class="subcategory-list">
+          <a href="#" data-page="42">Página 42</a>
+          <a href="#" data-page="44">Página 44</a>
+          <a href="#" data-page="26">Página 26</a>
+          <a href="#" data-page="28">Página 28</a>
+          <a href="#" data-page="30">Página 30</a>
+          <a href="#" data-page="34">Página 34</a>
+          <a href="#" data-page="40">Página 40</a>
+          <a href="#" data-page="42">Página 42</a>
+          <a href="#" data-page="62">Página 62</a>
+          <a href="#" data-page="136">Página 136</a>
+          <a href="#" data-page="180">Página 180</a>
+          <a href="#" data-page="182">Página 182</a>
+          <a href="#" data-page="185">Página 185</a>
+        </div>
+
+        <button class="category-btn">Converse ▼</button>
+        <div class="subcategory-list">
+          <a href="#" data-page="48">Página 48</a>
+          <a href="#" data-page="50">Página 50</a>
+        </div>
+        
+        <button class="category-btn">Under Armour ▼</button>
+        <div class="subcategory-list">
+          <a href="#" data-page="122">Página 122</a>
+          <a href="#" data-page="142">Página 142</a>
+          <a href="#" data-page="184">Página 184</a>
+        </div>
+
+        <button class="category-btn">Skechers ▼</button>
+        <div class="subcategory-list">
+          <a href="#" data-page="6">Página 6</a>
+          <a href="#" data-page="124">Página 124</a>
+          <a href="#" data-page="186">Página 186</a>
+        </div>
+        
+
+        <button class="category-btn">Nautica ▼</button>
+        <div class="subcategory-list">
+          <a href="#" data-page="8">Página 8</a>
+          <a href="#" data-page="82">Página 82</a>
+          <a href="#" data-page="92">Página 92</a>
+        </div>
+
+
+        <button class="category-btn">Mr Shu ▼</button>
+        <div class="subcategory-list">
+          <a href="#" data-page="10">Página 10</a>
+          <a href="#" data-page="12">Página 12</a>
+          <a href="#" data-page="16">Página 16</a>
+          <a href="#" data-page="60">Página 60</a>
+          <a href="#" data-page="100">Página 100</a>
+          <a href="#" data-page="104">Página 104</a>
+          <a href="#" data-page="108">Página 108</a>
+          <a href="#" data-page="110">Página 110</a>
+          <a href="#" data-page="112">Página 112</a>
+          <a href="#" data-page="144">Página 144</a>
+          <a href="#" data-page="146">Página 146</a>
+          <a href="#" data-page="148">Página 148</a>
+        </div>
+       
+        <button class="category-btn">K-Swiss ▼</button>
+        <div class="subcategory-list">
+          <a href="#" data-page="46">Página 46</a>
+        </div>
+
+
+        <button class="category-btn">Swiss Armour ▼</button>
+        <div class="subcategory-list">
+          <a href="#" data-page="8">Página 8</a>
+          <a href="#" data-page="64">Página 64</a>
+          <a href="#" data-page="158">Página 158</a>
+        </div>
+
+       <button class="category-btn">Zapatos ▼</button>
+        <div class="subcategory-list">
+          <a href="#" data-page="68">Página 68 - 90</a>
+        </div>
+
+       <button class="category-btn">Botas ▼</button>
+        <div class="subcategory-list">
+          <a href="#" data-page="148">Página 148 - 178</a>
+
+        </div>
+
+       <button class="category-btn">Sandalias ▼</button>
+        <div class="subcategory-list">
+          <a href="#" data-page="56">Página 56 - 64</a>
+
+        </div>
+
+        <button class="category-btn">Articulos deportivos ▼</button>
+        <div class="subcategory-list">
+          <a href="#" data-page="180">Página 179 - 186</a>
+
+        </div>            
+
+      </div>
+    </div>
+
+    <button id="toggle-sidebar">◀</button>
+    <div id="flipbook"></div>
+  </div>
+
+  <div class="controls">
+    <button id="prev">⬅ Anterior</button>
+    <button id="next">Siguiente ➡</button>
+    <span class="page-info">Página: <span id="current-page">0</span> / 186</span>
+    <input class="page-input" type="number" min="0" max="186" placeholder="Ir a página">
+    <button id="go-page">Ir</button>
+  </div>
+
+  <div id="thumbnail-gallery"></div>
+
+  <script>
+    const totalPages = 187;
+    const flipbook = $("#flipbook");
+
+    for (let i = 0; i <= totalPages; i++) {
+      const num = String(i).padStart(3, "0");
+      flipbook.append(`<div class="page"><img src="cat1/pagina_${num}.jpg" alt="Página ${i}"></div>`);
+    }
+
+    flipbook.turn({
+      width: 900,
+      height: 600,
+      autoCenter: true,
+      display: 'double'
+    });
+
+    $("#prev").click(() => flipbook.turn("previous"));
+    $("#next").click(() => flipbook.turn("next"));
+    $("#go-page").click(function () {
+      const page = parseInt($(".page-input").val());
+      if (!isNaN(page) && page >= 1 && page <= totalPages) {
+        flipbook.turn("page", page);
+      }
+      $(".page-input").val("");
+    });
+
+    $("#toggle-sidebar").click(function () {
+      $("#sidebar").toggleClass("collapsed");
+      $(this).text($("#sidebar").hasClass("collapsed") ? "▶" : "◀");
+    });
+
+    $(document).on("click", "#flipbook .page img", function () {
+      const src = $(this).attr("src");
+      $("body").append(`<div class="zoomed"><img src="${src}"></div>`);
+    });
+    $(document).on("click", ".zoomed", function () { $(this).remove(); });
+
+    flipbook.bind("turned", function (event, page) {
+      $("#current-page").text(page);
+    });
+
+    // ===== SUBMENÚS DE CATEGORÍAS =====
+    $(".subcategory-list").hide();
+    $(document).on("click", ".category-btn", function () {
+      const nextList = $(this).next(".subcategory-list");
+      $(".subcategory-list").not(nextList).slideUp(200);
+      nextList.slideToggle(200);
+    });
+    $(document).on("click", ".subcategory-list a", function (e) {
+      e.preventDefault();
+      const page = parseInt($(this).attr("data-page"));
+      flipbook.turn("page", page);
+      $(".subcategory-list").slideUp(200);
+    });
+
+    // ===== GALERÍA MINIATURAS =====
+    const gallery = $("#thumbnail-gallery");
+    for (let i = 0; i <= totalPages; i++) {
+      const num = String(i).padStart(3, "0");
+      gallery.append(`
+        <div class="thumb" data-page="${i}">
+          <img src="cat1/pagina_${num}.jpg" alt="Miniatura ${i}">
+          <span>${i}</span>
+        </div>
+      `);
+    }
+    $(document).on("click", ".thumb", function () {
+  let page = parseInt($(this).attr("data-page"));
+
+  // 🔧 Ajuste para modo 'double': si es impar, ir a la siguiente par (ej: 3 → 4)
+  if (page % 2 !== 0) page += 1;
+
+  flipbook.turn("page", page);
+  $(this).addClass("active");
+  setTimeout(() => $(this).removeClass("active"), 600);
+  $('html, body').animate({
+    scrollTop: $("#catalog-container").offset().top
+  }, 400);
+});
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+

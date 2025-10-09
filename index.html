@@ -503,78 +503,89 @@
 
   <div id="thumbnail-gallery"></div>
 
-<script>
-  const totalPages = 187;
-  const flipbook = $("#flipbook");
+  <script>
+    const totalPages = 187;
+    const flipbook = $("#flipbook");
 
-  // Crear los contenedores vacíos
-  for (let i = 0; i <= totalPages; i++) {
-    flipbook.append(`<div class="page" data-page="${i}"></div>`);
-  }
+    for (let i = 0; i <= totalPages; i++) {
+      const num = String(i).padStart(3, "0");
+      flipbook.append(`<div class="page"><img src="webp/pagina_${num}.webp" alt="Página ${i}"></div>`);
+    }
 
-  // Inicializar flipbook
-  flipbook.turn({
-    width: 900,
-    height: 600,
-    autoCenter: true,
-    display: 'double',
-when: {
-  turning: function(event, page, view) {
-    // Cargar solo las imágenes visibles y las adyacentes
-    const pagesToLoad = [page, page-1, page+1];
-    pagesToLoad.forEach(p => {
-      const pageDiv = flipbook.find(`.page[data-page="${p}"]`);
-      if (pageDiv.length && !pageDiv.has('img').length) {
-        const num = String(p).padStart(3, "0");
-        pageDiv.append(`<img src="webp/pagina_${num}.webp" alt="Página ${p}">`);
-      }
+    flipbook.turn({
+      width: 900,
+      height: 600,
+      autoCenter: true,
+      display: 'double'
     });
-  }
-}
-  });
 
-  // 🔹 Cargar las primeras páginas al inicio
-  const initialPages = [0, 1, 2];
-  initialPages.forEach(p => {
-    const pageDiv = flipbook.find(`.page[data-page="${p}"]`);
-    if (pageDiv.length && !pageDiv.has("img").length) {
-      const num = String(p).padStart(3, "0");
-      pageDiv.append(`<img src="webp/pagina_${num}.webp" alt="Página ${p}">`);
-    }
-  });
+    $("#prev").click(() => flipbook.turn("previous"));
+    $("#next").click(() => flipbook.turn("next"));
+    $("#go-page").click(function () {
+      const page = parseInt($(".page-input").val());
+      if (!isNaN(page) && page >= 1 && page <= totalPages) {
+        flipbook.turn("page", page);
+      }
+      $(".page-input").val("");
+    });
 
-  // Controles
-  $("#prev").click(() => flipbook.turn("previous"));
-  $("#next").click(() => flipbook.turn("next"));
-  $("#go-page").click(function () {
-    const page = parseInt($(".page-input").val());
-    if (!isNaN(page) && page >= 1 && page <= totalPages) {
+    $("#toggle-sidebar").click(function () {
+      $("#sidebar").toggleClass("collapsed");
+      $(this).text($("#sidebar").hasClass("collapsed") ? "▶" : "◀");
+    });
+
+    $(document).on("click", "#flipbook .page img", function () {
+      const src = $(this).attr("src");
+      $("body").append(`<div class="zoomed"><img src="${src}"></div>`);
+    });
+    $(document).on("click", ".zoomed", function () { $(this).remove(); });
+
+    flipbook.bind("turned", function (event, page) {
+      $("#current-page").text(page);
+    });
+
+    // ===== SUBMENÚS DE CATEGORÍAS =====
+    $(".subcategory-list").hide();
+    $(document).on("click", ".category-btn", function () {
+      const nextList = $(this).next(".subcategory-list");
+      $(".subcategory-list").not(nextList).slideUp(200);
+      nextList.slideToggle(200);
+    });
+    $(document).on("click", ".subcategory-list a", function (e) {
+      e.preventDefault();
+      const page = parseInt($(this).attr("data-page"));
       flipbook.turn("page", page);
+      $(".subcategory-list").slideUp(200);
+    });
+
+    // ===== GALERÍA MINIATURAS =====
+    const gallery = $("#thumbnail-gallery");
+    for (let i = 0; i <= totalPages; i++) {
+      const num = String(i).padStart(3, "0");
+      gallery.append(`
+        <div class="thumb" data-page="${i}">
+          <img src="mini/pagina_${num}.webp" alt="Miniatura ${i}">
+          <span>${i}</span>
+        </div>
+      `);
     }
-    $(".page-input").val("");
-  });
+    $(document).on("click", ".thumb", function () {
+  let page = parseInt($(this).attr("data-page"));
 
-  // Sidebar
-  $("#toggle-sidebar").click(function () {
-    $("#sidebar").toggleClass("collapsed");
-    $(this).text($("#sidebar").hasClass("collapsed") ? "▶" : "◀");
-  });
+  // 🔧 Ajuste para modo 'double': si es impar, ir a la siguiente par (ej: 3 → 4)
+  if (page % 2 !== 0) page += 1;
 
-  // Submenús
-  $(".category-btn").click(function () {
-    $(this).next(".subcategory-list").slideToggle(200);
-  });
-
-  // Ir a páginas desde subcategorías
-  $(".subcategory-list a").click(function (e) {
-    e.preventDefault();
-    const page = $(this).data("page");
-    flipbook.turn("page", page);
-  });
-</script>
-
+  flipbook.turn("page", page);
+  $(this).addClass("active");
+  setTimeout(() => $(this).removeClass("active"), 600);
+  $('html, body').animate({
+    scrollTop: $("#catalog-container").offset().top
+  }, 400);
+});
+  </script>
 </body>
 </html>
+
 
 
 

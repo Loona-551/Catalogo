@@ -518,19 +518,19 @@
     height: 600,
     autoCenter: true,
     display: 'double',
-    when: {
-      turning: function(event, page, view) {
-        // Cargar las imágenes visibles y las adyacentes al cambiar de página
-        const pagesToLoad = [page, page - 1, page + 1];
-        pagesToLoad.forEach(p => {
-          const pageDiv = flipbook.find(`.page[data-page="${p}"]`);
-          if (pageDiv.length && !pageDiv.has("img").length) {
-            const num = String(p).padStart(3, "0");
-            pageDiv.append(`<img src="webp/pagina_${num}.webp" alt="Página ${p}">`);
-          }
-        });
+when: {
+  turning: function(event, page, view) {
+    // Cargar solo las imágenes visibles y las adyacentes
+    const pagesToLoad = [page, page-1, page+1];
+    pagesToLoad.forEach(p => {
+      const pageDiv = flipbook.find(`.page[data-page="${p}"]`);
+      if (pageDiv.length && !pageDiv.has('img').length) {
+        const num = String(p).padStart(3, "0");
+        pageDiv.append(`<img src="webp/pagina_${num}.webp" alt="Página ${p}">`);
       }
-    }
+    });
+  }
+}
   });
 
   // 🔹 Cargar las primeras páginas al inicio
@@ -575,6 +575,7 @@
 
 </body>
 </html>
+
 
 
 
